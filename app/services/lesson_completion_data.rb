@@ -37,4 +37,10 @@ class LessonCompletionData
     end
     completion_durations
   end
+
+  def duration_percentage(duration)
+    duration_ratio = (duration / known_lesson_times_total).to_f
+    lesson_percentage = (duration_ratio * 100).round(2)
+    "#{lesson_percentage}%"
+  end
 end
