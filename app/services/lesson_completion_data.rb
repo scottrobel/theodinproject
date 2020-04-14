@@ -4,6 +4,10 @@ class LessonCompletionData
     @lessons = course.lessons
   end
 
+  def all_completion_data
+    LessonCompletionData.new(@course).completion_data(percentage: true, duration: true, course_duration: true)
+  end
+
   def completion_data(data_options)
     course_data = {}
     course_data['course_duration'] = known_completion_durations.inspect if data_options[:course_duration]
