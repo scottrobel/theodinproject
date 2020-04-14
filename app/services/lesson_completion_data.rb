@@ -4,6 +4,19 @@ class LessonCompletionData
     @lessons = course.lessons
   end
 
+  def completion_data(data_options)
+    course_data = {}
+    course_data['course_duration'] = known_completion_durations.inspect if data_options[:course_duration]
+    lesson_duration_pairs = known_completion_durations
+    course_lessons_data = lesson_duration_pairs.map do |lesson, duration|
+      lesson_data = {}
+      lesson_data['percentage'] = duration_percentage(duration) if data_options[:percentage]
+      lesson_data['duration'] = duration.inspect if data_options[:duration]
+      [lesson.title, lesson_data]
+    end.to_h
+    course_data.merge(course_lessons_data)
+  end
+
   private
 
   attr_reader :course
