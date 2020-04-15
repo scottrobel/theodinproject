@@ -5,7 +5,7 @@ class LessonCompletionData
   end
 
   def all_completion_data
-    LessonCompletionData.new(@course).completion_data(percentage: true, duration: true, course_duration: true)
+    LessonCompletionData.new(@course).completion_data(percentage: true, duration: true, course_duration: true, completion_count: true)
   end
 
   def completion_data(data_options)
@@ -16,6 +16,7 @@ class LessonCompletionData
       lesson_data = {}
       lesson_data['percentage'] = duration_percentage(duration) if data_options[:percentage]
       lesson_data['duration'] = duration.inspect if data_options[:duration]
+      lesson_data['users who finished'] = lesson_completions_count[lesson.id] if data_options[:completion_count]
       [lesson.title, lesson_data]
     end.to_h
     course_data.merge(course_lessons_data)
@@ -53,6 +54,10 @@ class LessonCompletionData
       end
     end
     completion_durations
+  end
+
+  def lesson_completions_count
+    lesson_completions_count ||= LessonCompletion.group(:lesson_id).count
   end
 
   def duration_percentage(duration)
