@@ -10,7 +10,7 @@ class LessonCompletionData
 
   def completion_data(data_options)
     course_data = {}
-    course_data['course_duration'] = known_completion_durations.inspect if data_options[:course_duration]
+    course_data['course_duration'] = known_lesson_times_total.inspect if data_options[:course_duration]
     lesson_duration_pairs = known_completion_durations
     course_lessons_data = lesson_duration_pairs.map do |lesson, duration|
       lesson_data = {}
@@ -21,7 +21,7 @@ class LessonCompletionData
     course_data.merge(course_lessons_data)
   end
 
-  private
+  #private
 
   attr_reader :course
 
@@ -37,7 +37,7 @@ class LessonCompletionData
 
   def known_completion_durations
     lessons = ordered_lessons
-    current_lesson = lessons.shift
+    current_lesson = lessons[0]
     current_lesson_avg_completion_time = lesson_and_avg_completion_date_pairs[current_lesson.id]
     completion_durations = {}
     lessons.each do |lesson|
@@ -46,8 +46,8 @@ class LessonCompletionData
       if next_lesson_avg_completion_time.nil? # if noone completed the assignment return data
         break
       else
-        average_duration_to_finish_current_lesson = next_lesson_avg_completion_time - current_lesson_avg_completion_time
-        completion_durations[current_lesson] = ActiveSupport::Duration.build(average_duration_to_finish_current_lesson)
+        average_duration_to_finish_next_lesson = next_lesson_avg_completion_time - current_lesson_avg_completion_time
+        completion_durations[next_lesson] = ActiveSupport::Duration.build(average_duration_to_finish_next_lesson)
         current_lesson_avg_completion_time = next_lesson_avg_completion_time
         current_lesson = next_lesson
       end
@@ -62,6 +62,6 @@ class LessonCompletionData
   end
 
   def known_lesson_times_total
-    @known_lesson_times_total ||= known_completion_durations.values.inject(&:+)
+    @known_lesson_times_total ||= (known_completion_durations.values.inject(&:+) || 0)
   end
 end
