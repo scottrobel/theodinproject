@@ -22,7 +22,7 @@ class LessonCompletionData
     course_data.merge(course_lessons_data)
   end
 
-  #private
+  private
 
   attr_reader :course
 
