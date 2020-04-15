@@ -5,7 +5,7 @@ class LessonCompletionData
   end
 
   def all_completion_data
-    LessonCompletionData.new(@course).completion_data(percentage: true, duration: true, course_duration: true, completion_count: true)
+    completion_data(percentage: true, duration: true, course_duration: true, completion_count: true)
   end
 
   def completion_data(data_options)
