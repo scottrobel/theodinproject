@@ -22,17 +22,28 @@ class LessonCompletionData
     course_data.merge(course_lessons_data)
   end
 
-  def self.reload_data
-    @@lesson_and_avg_completion_date_pairs = LessonCompletion.all.group(:lesson_id).average('extract(epoch from created_at)')
-    @@lesson_completions_count = LessonCompletion.group(:lesson_id).count
-  end
-
   private
 
   attr_reader :course
 
+  def most_recent_lesson_creation_epoch
+    Lesson.maximum('extract(epoch from created_at)')
+  end
+
   def lesson_and_avg_completion_date_pairs
-    @@lesson_and_avg_completion_date_pairs ||= LessonCompletion.all.group(:lesson_id).average('extract(epoch from created_at)')
+    @lesson_and_avg_completion_date_pairs ||= lesson_and_avg_completion_date_pairs_query
+  end
+
+  def lesson_completions_count
+    @lesson_completions_count ||= lesson_completions_count_query
+  end
+
+  def lesson_and_avg_completion_date_pairs_query
+    LessonCompletion.where('extract(epoch from created_at) > ?', most_recent_lesson_creation_epoch).group(:lesson_id).average('extract(epoch from created_at)')
+  end
+
+  def lesson_completions_count_query
+    LessonCompletion.where('extract(epoch from created_at) > ?', most_recent_lesson_creation_epoch).group(:lesson_id).count
   end
 
   def ordered_lessons
@@ -59,10 +70,6 @@ class LessonCompletionData
       end
     end
     completion_durations
-  end
-
-  def lesson_completions_count
-    @@lesson_completions_count ||= LessonCompletion.group(:lesson_id).count
   end
 
   def duration_percentage(duration)
