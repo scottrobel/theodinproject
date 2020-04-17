@@ -22,6 +22,11 @@ class LessonCompletionData
     course_data.merge(course_lessons_data)
   end
 
+  def self.reload_data
+    @@lesson_and_avg_completion_date_pairs = LessonCompletion.all.group(:lesson_id).average('extract(epoch from created_at)')
+    @@lesson_completions_count = LessonCompletion.group(:lesson_id).count
+  end
+
   private
 
   attr_reader :course
