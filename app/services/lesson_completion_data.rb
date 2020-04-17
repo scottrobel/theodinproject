@@ -10,6 +10,7 @@ class LessonCompletionData
 
   def completion_data(data_options)
     course_data = {}
+    course_data['NOTICE'] = "Lesson Completion Data before #{Time.at(most_recent_lesson_creation_epoch)} have been ommited"
     course_data['course_duration'] = known_lesson_times_total.inspect if data_options[:course_duration]
     lesson_duration_pairs = known_completion_durations
     course_lessons_data = lesson_duration_pairs.map do |lesson, duration|
@@ -27,7 +28,7 @@ class LessonCompletionData
   attr_reader :course
 
   def most_recent_lesson_creation_epoch
-    Lesson.maximum('extract(epoch from created_at)')
+    @most_recent_lesson_creation_epoch ||= Lesson.maximum('extract(epoch from created_at)')
   end
 
   def lesson_and_avg_completion_date_pairs
