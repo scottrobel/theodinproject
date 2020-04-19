@@ -2,7 +2,7 @@ class LessonCompletionData
   def initialize(course)
     @course = course
     @lesson_completions = lesson_completions_after(newest_lesson_creation_date)
-    @aggregated_lesson_completions = LessonCompletionAggregator.new(@lesson_completions)
+    @lesson_duration_data = LessonDurationData.new(@lesson_completions, ordered_lessons)
   end
 
   def all_completion_data
@@ -24,6 +24,10 @@ class LessonCompletionData
     course_data.merge(course_lessons_data)
   end
 
+  def lesson_duration(lesson)
+    @lesson_duration_data.known_completion_durations[lesson.id]
+  end
+
   private
 
   attr_reader :course
@@ -34,7 +38,7 @@ class LessonCompletionData
   end
 
   def lesson_completions_after(date)
-    lesson_completions.where('lesson_completions.created_at < ?', date)
+    lesson_completions.where('lesson_completions.created_at > ?', date)
   end
 
   def lesson_ids
@@ -54,9 +58,9 @@ class LessonCompletionData
   end
 
   def ordered_lessons
-    Course\
-    .joins('INNER JOIN sections ON sections.course_id = courses.id')\
-    .joins('INNER JOIN lessons ON lessons.section_id = sections.id')\
+    Lesson\
+    .joins('INNER JOIN sections ON lessons.section_id = sections.id')\
+    .joins('INNER JOIN courses ON sections.course_id = courses.id')\
     .order('lessons.position')\
     .where('courses.id = ?', @course.id)
   end
