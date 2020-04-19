@@ -6,10 +6,8 @@ class LessonDurationData
   
   def known_completion_durations
     @known_completion_durations ||= \
-    lessons_with_known_completion_times.map do |lesson|
-      last_lesson = previous_lesson(lesson) || lesson
-      lesson_duration = lesson_duration(lesson, last_lesson)
-      [lesson.id, lesson_duration]
+    lessons_with_known_completion_durations.map do |lesson|
+      [lesson.id, get_lesson_duration(lesson)]
     end.to_h
   end
 
@@ -18,13 +16,32 @@ class LessonDurationData
     known_completion_durations.values.sum
   end
 
-  def lesson_duration(lesson)
-    @lesson_duration_data.known_completion_durations[lesson.id]
+  def get_lesson_duration(lesson)
+    last_lesson = previous_lesson(lesson)
+    calculate_lesson_duration(lesson, last_lesson)
   end
 
   def lesson_percentage_of_total(lesson)
-    lesson_duration = lesson_duration(lesson)
-    (lesson_duration / known_completion_durations_total) * 100
+    lesson_duration = get_lesson_duration(lesson)
+    (lesson_duration / known_completion_durations_total * 100).to_f .round(2)
+  end
+
+  def average_lesson_duration
+    @average_lesson_duration ||= \
+    known_completion_durations_total / ammount_of_lessons_with_known_durations
+  end
+
+  def lesson_weight(lesson)
+    (get_lesson_duration(lesson) / average_lesson_duration).to_f.round(2)
+  end
+
+  def ammount_of_lessons_with_known_durations
+    lessons_with_known_completion_durations.size
+  end
+
+  def lessons_with_known_completion_durations
+    @lessons_with_known_completion_durations ||= \
+    (lessons_with_known_completion_times[1..-1] || [])
   end
 
   def previous_lesson(lesson)
@@ -49,7 +66,7 @@ class LessonDurationData
     filtered_lessons
   end
 
-  def lesson_duration(lesson, previous_lesson)
+  def calculate_lesson_duration(lesson, previous_lesson)
     lesson_completion_datetime_average = lesson_completion_datetime_average(lesson)
     previous_lesson_completion_datetime_average = lesson_completion_datetime_average(previous_lesson)
     seconds_duration = lesson_completion_datetime_average - previous_lesson_completion_datetime_average
