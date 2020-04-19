@@ -1,7 +1,8 @@
 class LessonCompletionData
   def initialize(course)
     @course = course
-    @lessons = course.lessons
+    @lesson_completions = lesson_completions_after(newest_lesson_creation_date)
+    @aggregated_lesson_completions = LessonCompletionAggregator.new(@lesson_completions)
   end
 
   def all_completion_data
@@ -27,8 +28,21 @@ class LessonCompletionData
 
   attr_reader :course
 
-  def most_recent_lesson_creation_epoch
-    @most_recent_lesson_creation_epoch ||= Lesson.maximum('extract(epoch from created_at)')
+  def lesson_completions
+    @lesson_completions ||= \
+    LessonCompletion.where(lesson_id: lesson_ids)
+  end
+
+  def lesson_completions_after(date)
+    lesson_completions.where('lesson_completions.created_at < ?', date)
+  end
+
+  def lesson_ids
+    @lesson_ids ||= course.lessons.pluck(:id)
+  end
+
+  def newest_lesson_creation_date
+    @most_recent_lesson_creation_epoch ||= Lesson.maximum('created_at')
   end
 
   def lesson_and_avg_completion_date_pairs
@@ -39,44 +53,12 @@ class LessonCompletionData
     @lesson_completions_count ||= lesson_completions_count_query
   end
 
-  def lesson_and_avg_completion_date_pairs_query
-    LessonCompletion\
-    .where('extract(epoch from created_at) > ?', most_recent_lesson_creation_epoch)\
-    .group(:lesson_id)\
-    .average('extract(epoch from created_at)')
-  end
-
-  def lesson_completions_count_query
-    LessonCompletion\
-    .where('extract(epoch from created_at) > ?', most_recent_lesson_creation_epoch)\
-    .group(:lesson_id)\
-    .count
-  end
-
   def ordered_lessons
-    @ordered_lessons ||= @course.sections.includes(:lessons).map do |section|
-      section.lessons.sort_by(&:position)
-    end.flatten
-  end
-
-  def known_completion_durations
-    lessons = ordered_lessons
-    current_lesson = lessons[0]
-    current_lesson_avg_completion_time = lesson_and_avg_completion_date_pairs[current_lesson.id]
-    completion_durations = {}
-    lessons.each do |lesson|
-      next_lesson = lesson
-      next_lesson_avg_completion_time = lesson_and_avg_completion_date_pairs[next_lesson.id]
-      if next_lesson_avg_completion_time.nil? # if noone completed the assignment return data
-        break
-      else
-        average_duration_to_finish_next_lesson = next_lesson_avg_completion_time - current_lesson_avg_completion_time
-        completion_durations[next_lesson] = ActiveSupport::Duration.build(average_duration_to_finish_next_lesson)
-        current_lesson_avg_completion_time = next_lesson_avg_completion_time
-        current_lesson = next_lesson
-      end
-    end
-    completion_durations
+    Course\
+    .joins('INNER JOIN sections ON sections.course_id = courses.id')\
+    .joins('INNER JOIN lessons ON lessons.section_id = sections.id')\
+    .order('lessons.position')\
+    .where('courses.id = ?', @course.id)
   end
 
   def duration_percentage(duration)
