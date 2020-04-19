@@ -84,8 +84,4 @@ class LessonCompletionData
     lesson_percentage = (duration_ratio * 100).round(2)
     "#{lesson_percentage}%"
   end
-
-  def known_lesson_times_total
-    @known_lesson_times_total ||= (known_completion_durations.values.inject(&:+) || 0)
-  end
 end
