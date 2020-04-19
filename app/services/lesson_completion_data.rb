@@ -40,11 +40,17 @@ class LessonCompletionData
   end
 
   def lesson_and_avg_completion_date_pairs_query
-    LessonCompletion.where('extract(epoch from created_at) > ?', most_recent_lesson_creation_epoch).group(:lesson_id).average('extract(epoch from created_at)')
+    LessonCompletion\
+    .where('extract(epoch from created_at) > ?', most_recent_lesson_creation_epoch)\
+    .group(:lesson_id)\
+    .average('extract(epoch from created_at)')
   end
 
   def lesson_completions_count_query
-    LessonCompletion.where('extract(epoch from created_at) > ?', most_recent_lesson_creation_epoch).group(:lesson_id).count
+    LessonCompletion\
+    .where('extract(epoch from created_at) > ?', most_recent_lesson_creation_epoch)\
+    .group(:lesson_id)\
+    .count
   end
 
   def ordered_lessons
