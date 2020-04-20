@@ -52,9 +52,7 @@ class LessonCompletionData
 
   def ordered_lessons
     Lesson\
-    .joins('INNER JOIN sections ON lessons.section_id = sections.id')\
-    .joins('INNER JOIN courses ON sections.course_id = courses.id')\
     .order('lessons.position')\
-    .where('courses.id = ?', @course.id)
+    .where(id: lesson_ids)
   end
 end
