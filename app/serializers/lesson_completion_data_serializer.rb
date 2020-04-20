@@ -14,14 +14,6 @@ class LessonCompletionDataSerializer
 
   private
 
-  def course_data_hash
-    {
-      'Last Lesson Creation' => \
-      "Ommited Results Before #{Time.at(@lesson_completion_data.newest_lesson_creation_date)}",
-      'course_duration' => @lesson_completion_data.course_duration_string
-    }
-  end
-
   def lessons_data_hash
     lessons_data_hash = {}
     lessons = @lesson_completion_data.lessons_with_known_completion_durations
@@ -29,6 +21,14 @@ class LessonCompletionDataSerializer
       lessons_data_hash[lesson.title] = lesson_data_hash(lesson)
     end
     lessons_data_hash
+  end
+
+  def course_data_hash
+    {
+      'Last Lesson Creation' => \
+      "Ommited Results Before #{Time.at(@lesson_completion_data.newest_lesson_creation_date)}",
+      'course_duration' => @lesson_completion_data.course_duration_string
+    }
   end
 
   def lesson_data_hash(lesson)
