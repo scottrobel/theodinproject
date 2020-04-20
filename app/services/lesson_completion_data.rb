@@ -29,6 +29,7 @@ class LessonCompletionData
   def lesson_duration(lesson)
     @lesson_duration_data.get_lesson_duration(lesson).inspect
   end
+
   def lesson_completions_count(lesson)
     @agregated_lesson_completions.lesson_completions_count[lesson.id]
   end

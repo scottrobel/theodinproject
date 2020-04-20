@@ -25,8 +25,8 @@ class LessonCompletionDataSerializer
 
   def course_data_hash
     {
-      'Last Lesson Creation' => \
-      "Ommited Results Before #{Time.at(@lesson_completion_data.newest_lesson_creation_date)}",
+      'Ommited Results Before' => \
+      "#{Time.at(@lesson_completion_data.newest_lesson_creation_date)}",
       'course_duration' => @lesson_completion_data.course_duration_string
     }
   end
